@@ -1,0 +1,40 @@
+name: Zero Trust CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Build Application (Placeholder)
+        run: echo "Proses build aplikasi berjalan di sini..."
+
+  # INI ADALAH BAGIAN JOBDESK 1 (TUGASMU)
+  security-scan:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'nginx:1.14' # Menggunakan image rentan untuk testing
+          format: 'table'
+          exit-code: '1' # Pipeline GAGAL jika ada Critical/High
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+  # INI ADALAH AREA JOBDESK 2
+  deploy:
+    needs: security-scan # Memastikan deploy menunggu scan milikmu selesai
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deployment Gate
+        run: echo "> Bagian ini akan diisi oleh Rafika Az Zahra Kusumastuti - Jobdesk 2: Implementasi Conditional Deployment Gate"
