@@ -1,6 +1,6 @@
 # Design Decisions: Security Scanning
 
-**Dikerjakan oleh: Hasan (Jobdesk 1)**
+> Bagian ini akan diisi oleh Hasan — Jobdesk 1:Setup & Implementasi Security Scan Job
 
 Implementasi pemindaian keamanan (*security scanning*) pada pipeline CI/CD proyek ini menggunakan **Trivy**. Pemilihan Trivy didasarkan pada kapabilitasnya sebagai *tool open-source* yang ringan dan dirancang secara *native* untuk *container image scanning*. 
 

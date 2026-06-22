@@ -2,24 +2,35 @@ name: Zero Trust CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+    - main
 
 jobs:
+
+# Pipeline dasar TaskFlow API dari modul sebelumnya
   build:
+    name: Build Application
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Build Application Placeholder
-        run: echo "Proses build berjalan..."
 
+      - name: Build Application
+        run: |
+          echo "Building TaskFlow API..."
+          echo "Build completed"
+
+# Jobdesk 1 — Setup & Implementasi Security Scan Job (Hasan)
   security-scan:
+    name: Security Scan
     needs: build
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
@@ -30,9 +41,41 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
+# Jobdesk 2 — Implementasi Conditional Deployment Gate (Rafika Az Zahra Kusumastuti)
   deploy:
+    name: Deploy
     needs: security-scan
     runs-on: ubuntu-latest
+
     steps:
-      - name: Deployment Gate Placeholder
-        run: echo "Bagian ini untuk Rafika - Jobdesk 2"
+      - name: Verify Deployment Gate
+        run: |
+          echo "Security scan passed"
+          echo "Deployment approved"
+          echo "Never Trust, Always Verify"
+
+      - name: Simulate Deployment
+        run: |
+          echo "Deploying TaskFlow API..."
+          echo "Deployment successful"
+
+# Pipeline dasar TaskFlow API dari modul sebelumnya
+  notify:
+    name: Send Notification
+    runs-on: ubuntu-latest
+    needs: [build, security-scan, deploy]
+    if: always()
+
+    steps:
+      - name: Pipeline Status
+        run: |
+          echo "Build Result: ${{ needs.build.result }}"
+          echo "Security Scan Result: ${{ needs.security-scan.result }}"
+          echo "Deploy Result: ${{ needs.deploy.result }}"
+
+          if [ "${{ needs.deploy.result }}" == "success" ]; then
+            echo "CI/CD Pipeline completed successfully"
+          else
+            echo "CI/CD Pipeline failed"
+            exit 1
+          fi
