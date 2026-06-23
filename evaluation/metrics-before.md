@@ -31,11 +31,14 @@ Tujuannya adalah membuktikan bahwa pada kondisi ini, image container yang mengan
 
 Tidak ada satu pun titik verifikasi yang menghalangi proses deployment. Image `nginx:1.14` berhasil "ter-deploy" sepenuhnya tanpa pengecekan keamanan apapun.
 
-![alt text](image-1.png)
+<img width="1160" height="598" alt="image" src="https://github.com/user-attachments/assets/8cea53d0-7b0d-4df7-9e35-d0ffb64191ed" />
 
-![alt text](image-2.png)
 
-![alt text](image-3.png)
+<img width="937" height="353" alt="image" src="https://github.com/user-attachments/assets/5fae8900-1fd3-42ba-a54c-679fd6946ca7" />
+
+
+<img width="1890" height="732" alt="image" src="https://github.com/user-attachments/assets/53c2915b-6898-426c-96f3-0b696feeaf54" />
+
 
 
 ## Hasil Vulnerability Scan Manual (Pembuktian)
@@ -70,7 +73,8 @@ Contoh temuan kritis: `CVE-2022-1664` (dpkg) — severity CRITICAL, sudah memili
 
 Seluruh kerentanan — termasuk 31 kerentanan berstatus CRITICAL — berhasil lolos sampai ke tahap deployment tanpa terdeteksi oleh pipeline, karena tidak ada gate keamanan yang aktif.
 
-![alt text](image.png)
+<img width="1438" height="656" alt="image" src="https://github.com/user-attachments/assets/2a44ae12-e83a-480a-86da-a3541db3d223" />
+
 
 ## Kesimpulan Sementara
 
