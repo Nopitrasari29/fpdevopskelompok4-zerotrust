@@ -150,29 +150,39 @@ FPDEVOPSKELOMPOK4-ZEROTRUST/
 
 ## 🚀 Menjalankan Pipeline
 
+### 0. Prerequisites (Persiapan)
+Sebelum menjalankan pipeline, pastikan hal berikut sudah tersedia:
+- Akun GitHub dengan akses ke repository ini.
+- Klaster Kubernetes (misalnya Minikube, GKE, atau EKS) yang sudah running.
+- `kubectl` yang terkonfigurasi untuk terhubung ke klaster.
+- GitHub Secrets yang sudah diatur di `Settings -> Secrets and variables -> Actions`:
+  - `KUBECONFIG`: Berisi konten file konfigurasi kubeconfig Anda agar GitHub Actions dapat mendeploy ke klaster.
+  - `REGISTRY_USERNAME` & `REGISTRY_PASSWORD`: Untuk autentikasi ke container registry (misalnya Docker Hub atau GHCR).
+
 ### 1. Clone Repository
 
 ```bash
-git clone <https://github.com/Nopitrasari29/fpdevopskelompok4-zerotrust.git>
+git clone https://github.com/Nopitrasari29/fpdevopskelompok4-zerotrust.git
+cd fpdevopskelompok4-zerotrust
 ```
 
-### 2. Push Perubahan
+### 2. Konfigurasi Deployment
+Pastikan file manifest di folder `implementation/` sudah sesuai dengan image registry Anda.
+
+### 3. Push Perubahan
+Setelah melakukan perubahan, push ke main branch:
 
 ```bash
 git add .
-git commit -m "test pipeline"
+git commit -m "update configuration"
 git push origin main
 ```
 
-### 3. Buka GitHub Actions
-
-Masuk ke:
-
-```
-Repository → Actions
-```
-
-Pastikan workflow berjalan.
+### 4. Buka GitHub Actions
+Masuk ke tab **Actions** di repositori Anda untuk melihat proses:
+1.  **Build**: Membangun container image.
+2.  **Security Scan**: Menjalankan Trivy untuk pemindaian.
+3.  **Deploy**: Melakukan deployment ke klaster (hanya jika security scan sukses).
 
 ---
 
@@ -204,8 +214,8 @@ Temuan Trivy:
 
 Screenshot:
 
-- evaluation/screenshots/before-pipeline-failed.png
-- evaluation/screenshots/before-trivy-report.png
+ ![Before Pipeline Failed](evaluation/screenshots/before-pipeline-failed.png)
+ ![Before Trivy Report](evaluation/screenshots/before-trivy-report.png)
 
 ---
 
@@ -227,7 +237,7 @@ Hasil:
 
 Screenshot:
 
-- evaluation/screenshots/after-pipeline-success.png
+ ![After Pipeline Success](evaluation/screenshots/after-pipeline-success.png)
 
 ---
 
