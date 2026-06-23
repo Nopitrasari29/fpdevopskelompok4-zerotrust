@@ -20,23 +20,23 @@ Skenario ini mensimulasikan kondisi pipeline CI/CD setelah prinsip Zero Trust di
 Pengujian skenario ini didasarkan pada run pipeline riil di GitHub Actions:
 
 ### 1. Skenario Pemblokiran Image Rentan (`nginx:1.14`)
-*   **Commit ID**: `e75de63` (Implement conditional deployment gate) oleh `anaspl`
-*   **Durasi Run**: **53 detik**
+*   **Commit ID**: `9156062` (test(job4): push vulnerable image to verify zero trust block) oleh `Nopitrasari29` (Aswalia)
+*   **Durasi Run**: **41 detik**
 *   **Status Job**:
-    *   `build`: **Success**
-    *   `security-scan`: **Failed** (Trivy mendeteksi kerentanan di atas threshold)
+    *   `build`: **Success** (4s)
+    *   `security-scan`: **Failed** (20s) (Trivy mendeteksi kerentanan di atas threshold)
     *   `deploy`: **Skipped** (Diblokir oleh deployment gate)
     *   `notify`: **Failed** (Pipeline mendeteksi kegagalan deploy)
 *   **Prevention Rate**: **100%** (Celah keamanan kritis berhasil diblokir sebelum menyentuh klaster produksi).
 
 ### 2. Skenario Sukses Image Aman (`nginx:latest`)
-*   **Commit ID**: `406a648` (test secure image) oleh `anaspl`
-*   **Durasi Run**: **1 menit 4 detik (64 detik)**
+*   **Commit ID**: `b5130fa` (test(job4): push secure image to verify deployment success) oleh `Nopitrasari29` (Aswalia)
+*   **Durasi Run**: **41 detik**
 *   **Status Job**:
-    *   `build`: **Success**
-    *   `security-scan`: **Success** (Lolos verifikasi keamanan)
-    *   `deploy`: **Success** (Berhasil dideploy ke klaster Kubernetes)
-    *   `notify`: **Success** (Pipeline selesai dengan sukses)
+    *   `build`: **Success** (4s)
+    *   `security-scan`: **Success** (15s) (Lolos verifikasi keamanan)
+    *   `deploy`: **Success** (4s) (Berhasil dideploy ke klaster Kubernetes)
+    *   `notify`: **Success** (3s) (Pipeline selesai dengan sukses)
 
 ---
 
@@ -45,19 +45,19 @@ Pengujian skenario ini didasarkan pada run pipeline riil di GitHub Actions:
 Berdasarkan data baseline dari Skenario Before (Baseline - Commit `ae0182b`):
 
 *   **Total Waktu Baseline (Tanpa Scan)**: **22 detik**
-*   **Total Waktu Zero Trust (Dengan Scan & Deploy Sukses)**: **64 detik**
-*   **Overhead Latency Absolut**: $64s - 22s = \mathbf{42\text{ detik}}$
+*   **Total Waktu Zero Trust (Dengan Scan & Deploy Sukses)**: **41 detik**
+*   **Overhead Latency Absolut**: $41s - 22s = \mathbf{19\text{ detik}}$
 *   **Persentase Overhead**:
-    $$\text{Overhead (\%)} = \left( \frac{42}{22} \right) \times 100\% = \mathbf{190.91\%}$$
+    $$\text{Overhead (\%)} = \left( \frac{19}{22} \right) \times 100\% = \mathbf{86.36\%}$$
 
 ### Analisis Latency & Justifikasi
-Penambahan durasi dari 22 detik menjadi 64 detik menghasilkan overhead latency sebesar **42 detik (190.91%)**. 
+Penambahan durasi dari 22 detik menjadi 41 detik menghasilkan overhead latency sebesar **19 detik (86.36%)**. 
 
 Overhead ini terjadi karena dua alasan utama:
-1.  **Inisialisasi & Download Database Trivy**: Pada GitHub Actions runner (bersih/clean VM), Trivy harus mengunduh database kerentanan terbaru (*vulnerability database* sebesar ~100MB+) di setiap *build run*. Proses ini membutuhkan waktu sekitar 30–40 detik.
+1.  **Inisialisasi & Download Database Trivy**: Pada GitHub Actions runner (bersih/clean VM), Trivy harus mengunduh database kerentanan terbaru (*vulnerability database* sebesar ~100MB+) di setiap *build run*. Namun pada eksekusi kali ini, pemindaian berjalan lebih cepat (15 detik) kemungkinan karena adanya caching dari cache server GitHub Actions atau kecepatan unduh yang optimal.
 2.  **Pemindaian File System Image**: Trivy melakukan pemindaian layer-by-layer terhadap base OS dan library package di dalam container image.
 
-Meskipun peningkatan persentase waktu terkesan tinggi secara matematis (~190%), secara praktis durasi absolut **64 detik** masih berada di bawah batas wajar (di bawah 2 menit). Peningkatan waktu ini sangat dapat ditoleransi dibandingkan risiko masuknya image bercelah keamanan kritis ke dalam lingkungan produksi jika menggunakan *implicit trust* (sebagaimana dirujuk dalam penelitian Bhardwaj dkk., 2025).
+Meskipun peningkatan persentase waktu terkesan tinggi secara matematis (~86%), secara praktis durasi absolut **41 detik** sangatlah cepat dan berada jauh di bawah batas wajar (di bawah 1 menit). Peningkatan waktu ini sangat layak ditoleransi dibandingkan risiko masuknya image bercelah keamanan kritis ke dalam lingkungan produksi jika menggunakan *implicit trust* (sebagaimana dirujuk dalam penelitian Bhardwaj dkk., 2025).
 
 ---
 
