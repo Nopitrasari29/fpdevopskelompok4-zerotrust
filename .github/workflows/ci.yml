@@ -61,7 +61,7 @@ jobs:
         run: |
           cosign generate-key-pair
           cosign sign-blob --yes --tlog-upload=false --key cosign.key sbom.json > sbom.json.sig
-          cosign verify-blob --key cosign.pub --signature sbom.json.sig sbom.json
+          cosign verify-blob --insecure-ignore-tlog --key cosign.pub --signature sbom.json.sig sbom.json
         env:
           COSIGN_PASSWORD: ""
           COSIGN_YES: "true"
