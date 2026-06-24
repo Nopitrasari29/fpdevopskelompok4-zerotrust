@@ -20,9 +20,9 @@ spec:
         runAsUser: 1000
       containers:
       - name: taskflow-api
-        image: nginx:latest
+        image: nginxinc/nginx-unprivileged:latest
         ports:
-        - containerPort: 80
+        - containerPort: 8080
         resources:
           limits:
             cpu: "500m"
@@ -32,13 +32,13 @@ spec:
             memory: "256Mi"
         livenessProbe:
           httpGet:
-            path: /health
-            port: 80
+            path: /
+            port: 8080
           initialDelaySeconds: 15
           periodSeconds: 20
         readinessProbe:
           httpGet:
-            path: /health
-            port: 80
+            path: /
+            port: 8080
           initialDelaySeconds: 5
           periodSeconds: 10
