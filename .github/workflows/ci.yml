@@ -59,7 +59,7 @@ jobs:
 
       - name: Generate Cosign Key Pair, Sign, and Verify
         run: |
-          cosign generate-key-pair ""
+          cosign generate-key-pair
           cosign sign-blob --key cosign.key sbom.json > sbom.json.sig
           cosign verify-blob --key cosign.pub --signature sbom.json.sig sbom.json
         env:
