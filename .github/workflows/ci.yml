@@ -41,6 +41,40 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
+      - name: Generate SBOM with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'nginx:latest'
+          format: 'cyclonedx'
+          output: 'sbom.json'
+
+      - name: Upload SBOM Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.5.0
+
+      - name: Generate Cosign Key Pair, Sign, and Verify
+        run: |
+          cosign generate-key-pair ""
+          cosign sign-blob --key cosign.key sbom.json > sbom.json.sig
+          cosign verify-blob --key cosign.pub --signature sbom.json.sig sbom.json
+        env:
+          COSIGN_PASSWORD: ""
+
+      - name: Install Conftest
+        run: |
+          wget https://github.com/open-policy-agent/conftest/releases/download/v0.45.0/conftest_0.45.0_Linux_x86_64.tar.gz
+          tar xzf conftest_0.45.0_Linux_x86_64.tar.gz
+          sudo mv conftest /usr/local/bin
+          conftest --version
+
+      - name: Check Policy as Code with Conftest
+        run: conftest test implementation/k8s-deployment.yaml -p policy/deployment.rego
+
 # Jobdesk 2 — Implementasi Conditional Deployment Gate (Rafika Az Zahra Kusumastuti)
   deploy:
     name: Deploy

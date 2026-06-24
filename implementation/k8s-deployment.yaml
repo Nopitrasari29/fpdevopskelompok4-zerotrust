@@ -16,6 +16,8 @@ spec:
       labels:
         app: taskflow-api
     spec:
+      securityContext:
+        runAsUser: 1000
       containers:
       - name: taskflow-api
         image: nginx:latest
