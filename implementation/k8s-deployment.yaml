@@ -17,7 +17,7 @@ spec:
         app: taskflow-api
     spec:
       securityContext:
-        runAsUser: 0
+        runAsUser: 1000
       containers:
       - name: taskflow-api
         image: nginxinc/nginx-unprivileged:latest

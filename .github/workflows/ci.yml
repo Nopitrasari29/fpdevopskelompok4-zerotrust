@@ -101,6 +101,11 @@ jobs:
         run: |
           echo "Mengimplementasikan Zero Trust: Never Trust, Always Verify"
           echo "Mengecek ulang keabsahan dan integritas artifact sebelum masuk ke production..."
+          
+          echo "MENSIMULASIKAN SERANGAN (TAMPERING)"
+          echo "Menyisipkan paket malware fiktif ke dalam SBOM..."
+          echo '{"malicious": "package"}' >> sbom.json
+          
           cosign verify-blob --insecure-ignore-tlog --key cosign.pub --signature sbom.json.sig sbom.json
           echo "✅ Verifikasi Kriptografis Berhasil. Gate dibuka."
 
