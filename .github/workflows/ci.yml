@@ -34,12 +34,50 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'nginx:latest'
+          image-ref: 'nginxinc/nginx-unprivileged:latest'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+
+      - name: Generate SBOM with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'nginxinc/nginx-unprivileged:latest'
+          format: 'cyclonedx'
+          output: 'sbom.json'
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.5.0
+
+      - name: Generate Cosign Key Pair, Sign, and Verify
+        run: |
+          cosign generate-key-pair
+          cosign sign-blob --yes --tlog-upload=false --key cosign.key sbom.json > sbom.json.sig
+          cosign verify-blob --insecure-ignore-tlog --key cosign.pub --signature sbom.json.sig sbom.json
+        env:
+          COSIGN_PASSWORD: ""
+          COSIGN_YES: "true"
+
+      - name: Upload Security Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-artifacts
+          path: |
+            sbom.json
+            sbom.json.sig
+            cosign.pub
+
+      - name: Install Conftest
+        run: |
+          wget https://github.com/open-policy-agent/conftest/releases/download/v0.45.0/conftest_0.45.0_Linux_x86_64.tar.gz
+          tar xzf conftest_0.45.0_Linux_x86_64.tar.gz
+          sudo mv conftest /usr/local/bin
+          conftest --version
+
+      - name: Check Policy as Code with Conftest
+        run: conftest test implementation/k8s-deployment.yaml -p policy/deployment.rego
 
 # Jobdesk 2 — Implementasi Conditional Deployment Gate (Rafika Az Zahra Kusumastuti)
   deploy:
@@ -48,16 +86,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Verify Deployment Gate
-        run: |
-          echo "Security scan passed"
-          echo "Deployment approved"
-          echo "Never Trust, Always Verify"
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Simulate Deployment
+      - name: Download Security Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: security-artifacts
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.5.0
+
+      - name: Verify Deployment Gate (Zero Trust)
         run: |
-          echo "Deploying TaskFlow API..."
-          echo "Deployment successful"
+          echo "Mengimplementasikan Zero Trust: Never Trust, Always Verify"
+          echo "Mengecek ulang keabsahan dan integritas artifact sebelum masuk ke production..."
+          cosign verify-blob --insecure-ignore-tlog --key cosign.pub --signature sbom.json.sig sbom.json
+          echo "✅ Verifikasi Kriptografis Berhasil. Gate dibuka."
+
+      - name: Setup Kubernetes Cluster (KinD)
+        uses: helm/kind-action@v1.9.0
+        with:
+          cluster_name: taskflow-cluster
+
+      - name: Execute Real Deployment
+        run: |
+          echo "Membuat namespace dan mendeploy aplikasi..."
+          kubectl create namespace taskflow-prod
+          kubectl apply -f implementation/k8s-deployment.yaml
+
+      - name: Verify Pods are Running
+        run: |
+          kubectl rollout status deployment/taskflow-api-deployment -n taskflow-prod --timeout=90s
+          kubectl get pods -n taskflow-prod
 
 # Pipeline dasar TaskFlow API dari modul sebelumnya
   notify:
