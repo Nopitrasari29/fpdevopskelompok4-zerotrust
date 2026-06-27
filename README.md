@@ -270,11 +270,13 @@ nginxinc/nginx-unprivileged:latest
 
 Hasil:
 
-| Stage | Status |
-|---------|---------|
-| Build | Success |
-| Security Scan | Success |
-| Deploy | Success |
+| Metrik | Hasil |
+|---|---|
+| Kerentanan Kritis/Tinggi terdeteksi (Trivy Pipeline - ignore unfixed) | 0 (Lolos Threshold) |
+| Kerentanan Kritis/Tinggi yang lolos ke deploy | 0 |
+| **Prevention rate** | **100%** |
+
+Dengan beralih ke image `nginx:latest`, semua kerentanan OS dan pustaka yang tidak memiliki perbaikan (unfixed) diabaikan, dan tidak ditemukan kerentanan dengan tingkat HIGH/CRITICAL yang melanggar threshold keamanan aktif.
 
 Screenshot:
 
