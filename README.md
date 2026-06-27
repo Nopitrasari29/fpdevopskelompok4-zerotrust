@@ -213,26 +213,38 @@ nginx:1.14
 
 Hasil:
 
-| Stage | Status |
-|---------|---------|
-| Build | Success |
-| Security Scan | Failed |
-| Deploy | Skipped |
+Karena pipeline pada skenario ini tidak melakukan pemeriksaan keamanan, scan dijalankan secara manual di luar pipeline untuk membuktikan tingkat risiko image yang sebenarnya lolos:
 
-Temuan Trivy:
+```
+docker run --rm aquasec/trivy:latest image --severity CRITICAL,HIGH --timeout 10m nginx:1.14
+```
+
+**Report Summary:**
+
+| Target | Type | Total Vulnerabilities |
+|---|---|---|
+| nginx:1.14 (debian 9.8) | debian | 113 |
 
 | Severity | Jumlah |
-|-----------|---------|
-| Critical | 27 |
-| High | 50 |
-| Total | 77 |
+|---|---|
+| CRITICAL | 31 |
+| HIGH | 82 |
+| **Total** | **113** |
 
-Screenshot:
+Contoh temuan kritis: `CVE-2022-1664` (dpkg) — severity CRITICAL, sudah memiliki fixed version (1.18.26) namun tetap terpasang versi rentan (1.18.25) pada image yang diuji.
 
- ![Before Pipeline Failed](evaluation/screenshots/before-pipeline-failed.png)
- ![Before Trivy Report](evaluation/screenshots/before-trivy-report.png)
+## Prevention Rate
 
----
+| Metrik | Hasil |
+|---|---|
+| Vulnerability terdeteksi | 113 (31 Critical, 82 High) |
+| Vulnerability yang berhasil diblokir oleh pipeline | 0 |
+| **Prevention rate** | **0%** |
+
+Seluruh kerentanan — termasuk 31 kerentanan berstatus CRITICAL — berhasil lolos sampai ke tahap deployment tanpa terdeteksi oleh pipeline, karena tidak ada gate keamanan yang aktif.
+
+<img width="1438" height="656" alt="image" src="https://github.com/user-attachments/assets/2a44ae12-e83a-480a-86da-a3541db3d223" />
+
 
 ### Skenario Pengujian Zero Trust (Negative & Positive Test)
 
